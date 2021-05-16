@@ -70,7 +70,7 @@ curl -H "Accept:application/json" localhost:8083/connectors/
 ```
 curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" \
 
-localhost:8083/connectors/ -d '{"name": "sde-connector-account", "config": {"connector.class": "io.debezium.connector.postgresql.PostgresConnector", "database.hostname": "postgres", "database.port": "5432", "database.user": "start_data_engineer", "database.password": "password", "database.dbname" : "start_data_engineer", "database.server.name": "acnserver1", "table.whitelist": "acn.account"}}'
+localhost:8083/connectors/ -d '{"name": "sde-connector-account", "config": {"connector.class": "io.debezium.connector.postgresql.PostgresConnector", "database.hostname": "postgres", "database.port": "5432", "database.user": "start_data_engineer", "database.password": "password", "database.dbname" : "start_data_engineer", "database.server.name": "acnserver2", "table.whitelist": "acn.account"}}'
 
 ```
 **Check for presence of connector**
@@ -78,9 +78,9 @@ localhost:8083/connectors/ -d '{"name": "sde-connector-account", "config": {"con
 
 **Consumer**
 ```
-docker run -it --rm --name accountConsumer --link zookeeper:zookeeper \
+docker run -it --rm --name account-consumer --link zookeeper:zookeeper \
 
---link kafka:kafka debezium/kafka:1.1 watch-topic -a acnserver1.acn.account --max-messages 1 | grep '^{' | jq
+--link kafka:kafka debezium/kafka:1.1 watch-topic -a acnserver2.acn.account --max-messages 1 | grep '^{' | jq
 ```
 **Deploy customerAPI to docker & link to postgres database**
 ```
