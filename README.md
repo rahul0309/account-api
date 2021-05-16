@@ -40,13 +40,13 @@ cat /var/lib/postgresql/data/postgresql.conf
 pgcli -h localhost -p 5432 -U start_data_engineer  (#Passowrd is password)
 CREATE SCHEMA acn;
 SET search_path TO acn,public;
-CREATE TABLE acn.customer (
-    customer_id int,
-    customer_name text,
-    customer_address text,
-    primary key(customer_id)
+CREATE TABLE acn.account (
+    account_number int,
+    account_name text,
+    account_type text,
+    primary key(account_number)
 );
-ALTER TABLE acn.customer replica identity FULL;
+ALTER TABLE acn.account replica identity FULL;
 
 ```
 **Install Zookeeper and Kafka on Docker**
@@ -70,7 +70,7 @@ curl -H "Accept:application/json" localhost:8083/connectors/
 ```
 curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" \
 
-localhost:8083/connectors/ -d '{"name": "sde-connector", "config": {"connector.class": "io.debezium.connector.postgresql.PostgresConnector", "database.hostname": "postgres", "database.port": "5432", "database.user": "start_data_engineer", "database.password": "password", "database.dbname" : "start_data_engineer", "database.server.name": "acnserver1", "table.whitelist": "acn.customer"}}'
+localhost:8083/connectors/ -d '{"name": "sde-connector", "config": {"connector.class": "io.debezium.connector.postgresql.PostgresConnector", "database.hostname": "postgres", "database.port": "5432", "database.user": "start_data_engineer", "database.password": "password", "database.dbname" : "start_data_engineer", "database.server.name": "acnserver1", "table.whitelist": "acn.account"}}'
 
 ```
 **Check for presence of connector**
@@ -80,11 +80,16 @@ localhost:8083/connectors/ -d '{"name": "sde-connector", "config": {"connector.c
 ```
 docker run -it --rm --name consumer --link zookeeper:zookeeper \
 
---link kafka:kafka debezium/kafka:1.1 watch-topic -a acnserver1.acn.customer --max-messages 1 | grep '^{' | jq
+--link kafka:kafka debezium/kafka:1.1 watch-topic -a acnserver1.acn.account --max-messages 1 | grep '^{' | jq
 ```
 **Deploy customerAPI to docker & link to postgres database**
 ```
 docker image build -t customer-api .
-docker run --name customer-api --link postgres -p 8080:8080 -d customer-api
+docker run --name customer-api --link postgres -p 9091:9091 -d account-api
 ```
+**Launch Swagger URL in your browser (chrome is preferred)**
+```
+http://localhost:9091/account-api/swagger-ui.html
+```
+
 
